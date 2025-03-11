@@ -1,3 +1,11 @@
 class
 foo
 bar //comment
+
+/* this is a comment
+    /* nested */
+    /* nested again */
+    more here
+*/
+
+baz

@@ -1,11 +1,11 @@
-package jlox;
+package lox;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
-import static jlox.TokenType.*;
+import static lox.TokenType.*;
 
 class Scanner {
     private final String source;
@@ -70,7 +70,7 @@ class Scanner {
             if (match('/')) {
                 while (peek() != '\n' && !isAtEnd()) advance();
             } else if (match('*')) {
-
+                blockComment();
             } else {
                 addToken(SLASH);
             }
@@ -123,6 +123,29 @@ class Scanner {
 
         String value = source.substring(start + 1, current - 1);
         addToken(STRING, value);
+    }
+
+    private void blockComment() {
+        int blockStartLine = line;
+
+        while (!isAtEnd()) {
+            char c = peek();
+
+            if (c == '/' && peekNext() == '*') {
+                advance();
+                advance();
+                blockComment();
+            } else if (c == '*' && peekNext() == '/') {
+                advance();
+                advance();
+                return;
+            } else {
+                if (c == '\n') line++;
+                advance();
+            }
+        }
+
+        Lox.error(blockStartLine, "Unterminated block comment.");
     }
 
     private boolean match(char expected) {
