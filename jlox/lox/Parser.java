@@ -23,16 +23,42 @@ class Parser {
     }
 
     private Expr expression() {
-        return comma;
+        return comma();
     }
 
     private Expr comma() {
-        Expr expr = equality();
+        Expr expr = ternary();
 
         while (match(COMMA)) {
             Token operator = previous();
-            Expr right = equality();
+            Expr right = ternary();
             expr = new Expr.Binary(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    private Expr ternaryPhp() {
+        Expr expr = equality();
+
+        while (match(EROTEME)) {
+            Expr left = equality();
+            consume(COLON, "EXPECT ':' after expression.");
+            Expr right = equality();
+            expr = new Expr.Ternary(expr, left, right);
+        }
+
+        return expr;
+    }
+
+    private Expr ternary() {
+        Expr expr = equality();
+
+        if (match(EROTEME)) {
+            Expr left = equality();
+            consume(COLON, "EXPECT ':' after expression.");
+            Expr right = ternary();
+            return new Expr.Ternary(expr, left, right);
         }
 
         return expr;

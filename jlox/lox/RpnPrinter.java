@@ -26,6 +26,11 @@ class RpnPrinter implements Expr.Visitor<String> {
         return polishize(expr.operator.lexeme, expr.right);
     }
 
+    @Override
+    public String visitTernaryExpr(Expr.Ternary expr) {
+        return polishize("tern", expr.expression, expr.left, expr.right);
+    }
+
     private String polishize(String name, Expr... exprs) {
         StringBuilder builder = new StringBuilder();
 

@@ -13,7 +13,10 @@ primary     → NUMBER | STRING | "true" | "false" | "nil"
 --updated:
 
 expression  → comma ;
-comma       → equality ("," equality) ;
+comma       → ternary ( "," ternary )* ;
+ternary     → equality ( "?" equality ":" equality )* ;     l-to-r (php)
+ternary     → equality "?" equality ":" ternary
+            | equality ;                                    l-to-r (C)
 equality    → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison  → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term        → factor ( ( "-" | "+" ) factor )* ;
@@ -22,3 +25,8 @@ unary       → ( "!" | "-" ) unary
             | primary ;
 primary     → NUMBER | STRING | "true" | "false" | "nil"
             | "(" expression ")" ;
+
+a ? b : c ? b2 : c2
+(a ? b : c) ? b2 : c2   Left
+a ? b : (c ? b2 : c2)   Right
+
