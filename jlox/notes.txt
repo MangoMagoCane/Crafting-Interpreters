@@ -1,0 +1,3 @@
+additions to make:
+    bitwise operators
+    error production for binary operators (p. 91)

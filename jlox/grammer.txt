@@ -1,5 +1,6 @@
 --original:
 
+--expressions:
 expression  → equality ;
 equality    → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison  → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
@@ -10,13 +11,22 @@ unary       → ( "!" | "-" ) unary
 primary     → NUMBER | STRING | "true" | "false" | "nil"
             | "(" expression ")" ;
 
+--statements:
+program        → statement* EOF ;
+statement      → exprStmt
+               | printStmt ;
+exprStmt       → expression ";" ;
+printStmt      → "print" expression ";" ;
+printSexprStmt   → "print_ast" expression ";" ;
+
 --updated:
 
+--expressions:
 expression  → comma ;
 comma       → ternary ( "," ternary )* ;
-ternary     → equality ( "?" equality ":" equality )* ;     l-to-r (php)
-ternary     → equality "?" equality ":" ternary
-            | equality ;                                    l-to-r (C)
+ternaryRL   → ternaryLR "?" ternaryLR ":" ternaryRL
+            | ternaryLR ;                                    (C)
+ternaryLR   → equality ( "?." equality ":" equality )* ;    (php)
 equality    → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison  → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term        → factor ( ( "-" | "+" ) factor )* ;
@@ -25,6 +35,13 @@ unary       → ( "!" | "-" ) unary
             | primary ;
 primary     → NUMBER | STRING | "true" | "false" | "nil"
             | "(" expression ")" ;
+
+--statements:
+program     → statement* EOF ;
+statement   → exprStmt
+            | printStmt ;
+exprStmt    → expression ";" ;
+printStmt   → "print" expression ";" ;
 
 a ? b : c ? b2 : c2
 (a ? b : c) ? b2 : c2   Left

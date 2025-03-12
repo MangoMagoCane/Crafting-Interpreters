@@ -27,6 +27,7 @@ class Scanner {
         keywords.put("nil", NIL);
         keywords.put("or", OR);
         keywords.put("print", PRINT);
+        keywords.put("print_sexpr", PRINT_SEXPR);
         keywords.put("return", RETURN);
         keywords.put("super", SUPER);
         keywords.put("this", THIS);
@@ -63,11 +64,11 @@ class Scanner {
         case ':': addToken(COLON); break;
         case ';': addToken(SEMICOLON); break;
         case '*': addToken(STAR); break;
-        case '?': addToken(EROTEME); break;
         case '!': addToken(match('=') ? BANG_EQUAL : BANG); break;
         case '=': addToken(match('=') ? EQUAL_EQUAL : EQUAL); break;
         case '<': addToken(match('=') ? LESS_EQUAL : LESS); break;
         case '>': addToken(match('=') ? GREATER_EQUAL : GREATER); break;
+        case '?': addToken(match('.') ? EROTEME_DOT: EROTEME); break;
         case '/':
             if (match('/')) {
                 while (peek() != '\n' && !isAtEnd()) advance();

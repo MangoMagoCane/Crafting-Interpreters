@@ -1,6 +1,7 @@
-class
-foo
-bar //comment
+print_sexpr false ?. 1 : false ? 2 : 3;
+print_sexpr false ? 1 : false ?. 2 : 3;
+
+//comment
 
 /* this is a comment
     /* nested */
@@ -8,4 +9,3 @@ bar //comment
     more here
 */
 
-baz

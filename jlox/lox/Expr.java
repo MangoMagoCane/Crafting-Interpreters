@@ -11,6 +11,8 @@ abstract class Expr {
         R visitTernaryExpr(Ternary expr);
     }
 
+    abstract <R> R accept(Visitor<R> visitor);
+
     static class Binary extends Expr {
         final Expr left;
         final Token operator;
@@ -86,6 +88,4 @@ abstract class Expr {
         }
     }
 
-
-    abstract <R> R accept(Visitor<R> visitor);
 }

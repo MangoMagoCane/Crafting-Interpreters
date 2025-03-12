@@ -1,5 +1,6 @@
 package lox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static lox.TokenType.*;
@@ -14,12 +15,38 @@ class Parser {
         this.tokens = tokens;
     }
 
-    Expr parse() {
-        try {
-            return expression();
-        } catch (ParseError error) {
-            return null;
+    List<Stmt> parse() {
+        List<Stmt> statements = new ArrayList<>();
+        while (!isAtEnd()) {
+            statements.add(statement());
         }
+
+        return statements;
+    }
+
+    private Stmt statement() {
+        if (match(PRINT)) return printStatement();
+        if (match(PRINT_SEXPR)) return printSexprStatement();
+
+        return expressionStatement();
+    }
+
+    private Stmt expressionStatement() {
+        Expr value = expression();
+        consume(SEMICOLON, "Expect ';' after value.");
+        return new Stmt.Expression(value);
+    }
+
+    private Stmt printStatement() {
+        Expr value = expression();
+        consume(SEMICOLON, "Expect ';' after value.");
+        return new Stmt.Print(value);
+    }
+
+    private Stmt printSexprStatement() {
+        Expr value = expression();
+        consume(SEMICOLON, "Expect ';' after value.");
+        return new Stmt.PrintSexpr(value);
     }
 
     private Expr expression() {
@@ -27,21 +54,34 @@ class Parser {
     }
 
     private Expr comma() {
-        Expr expr = ternary();
+        Expr expr = ternaryRL();
 
         while (match(COMMA)) {
             Token operator = previous();
-            Expr right = ternary();
+            Expr right = ternaryRL();
             expr = new Expr.Binary(expr, operator, right);
         }
 
         return expr;
     }
 
-    private Expr ternaryPhp() {
+    private Expr ternaryRL() {
+        Expr expr = ternaryLR();
+
+        if (match(EROTEME)) {
+            Expr left = ternaryLR();
+            consume(COLON, "EXPECT ':' after expression.");
+            Expr right = ternaryRL();
+            return new Expr.Ternary(expr, left, right);
+        }
+
+        return expr;
+    }
+
+    private Expr ternaryLR() {
         Expr expr = equality();
 
-        while (match(EROTEME)) {
+        while (match(EROTEME_DOT)) {
             Expr left = equality();
             consume(COLON, "EXPECT ':' after expression.");
             Expr right = equality();
@@ -51,18 +91,6 @@ class Parser {
         return expr;
     }
 
-    private Expr ternary() {
-        Expr expr = equality();
-
-        if (match(EROTEME)) {
-            Expr left = equality();
-            consume(COLON, "EXPECT ':' after expression.");
-            Expr right = ternary();
-            return new Expr.Ternary(expr, left, right);
-        }
-
-        return expr;
-    }
 
     private Expr equality() {
         Expr expr = comparison();
