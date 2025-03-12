@@ -1,5 +1,18 @@
-print_sexpr false ?. 1 : false ? 2 : 3;
-print_sexpr false ? 1 : false ?. 2 : 3;
+//printSexpr true ?. 1 : false ?. 2 : 3 ? 4 : 5;
+//printSexpr true ?. 1 : false ?  2 : 3 ? 4 : 5;
+//printSexpr true ?  1 : false ?. 2 : 3 ? 4 : 5;
+//printSexpr true ?  1 : false ?  2 : 3 ? 4 : 5;
+
+var a = 1;
+{
+    var a = a + 2;
+    print a;
+}
+
+// (((true ?. 1 : false) ?. 2 : 3) ? 4 : 5);
+// ((true ?. 1 : false) ? 2 : (3 ? 4 : 5));
+// (true ? 1 : ((false ?. 2 : 3) ? 4 : 5));
+// (true ? 1 : (false ? 2 : (3 ? 4 : 5)));
 
 //comment
 

@@ -1,28 +1,8 @@
---original:
-
 --expressions:
-expression  → equality ;
-equality    → comparison ( ( "!=" | "==" ) comparison )* ;
-comparison  → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-term        → factor ( ( "-" | "+" ) factor )* ;
-factor      → unary ( ( "/" | "*" ) unary )* ;
-unary       → ( "!" | "-" ) unary
-            | primary ;
-primary     → NUMBER | STRING | "true" | "false" | "nil"
-            | "(" expression ")" ;
 
---statements:
-program        → statement* EOF ;
-statement      → exprStmt
-               | printStmt ;
-exprStmt       → expression ";" ;
-printStmt      → "print" expression ";" ;
-printSexprStmt   → "print_ast" expression ";" ;
-
---updated:
-
---expressions:
-expression  → comma ;
+expression  → assignment ;
+assignment  → IDENTIFIER "=" assignment 
+            | comma ;
 comma       → ternary ( "," ternary )* ;
 ternaryRL   → ternaryLR "?" ternaryLR ":" ternaryRL
             | ternaryLR ;                                    (C)
@@ -34,16 +14,21 @@ factor      → unary ( ( "/" | "*" ) unary )* ;
 unary       → ( "!" | "-" ) unary
             | primary ;
 primary     → NUMBER | STRING | "true" | "false" | "nil"
-            | "(" expression ")" ;
+            | "(" expression ")"
+            | IDENTIFIER ;
 
 --statements:
-program     → statement* EOF ;
-statement   → exprStmt
-            | printStmt ;
-exprStmt    → expression ";" ;
-printStmt   → "print" expression ";" ;
 
-a ? b : c ? b2 : c2
-(a ? b : c) ? b2 : c2   Left
-a ? b : (c ? b2 : c2)   Right
+program        → declaration* EOF ;
+declaration    → varDecl
+               | statement ;
+varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
+statement      → printStmt
+               | prinSexprtStmt
+               | block;
+               | exprStmt ;
+block          → "{" declaration* "}" ;
+exprStmt       → expression ";" ;
+printStmt      → "print" expression ";" ;
+printSexprStmt → "printSexpr" expression ";" ;
 
