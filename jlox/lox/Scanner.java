@@ -27,7 +27,7 @@ class Scanner {
         keywords.put("nil", NIL);
         keywords.put("or", OR);
         keywords.put("print", PRINT);
-        keywords.put("print_sexpr", PRINT_SEXPR);
+        keywords.put("printSexpr", PRINT_SEXPR);
         keywords.put("return", RETURN);
         keywords.put("super", SUPER);
         keywords.put("this", THIS);

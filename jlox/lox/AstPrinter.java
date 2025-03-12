@@ -28,15 +28,27 @@ class AstPrinter implements Expr.Visitor<String> {
 
     @Override
     public String visitTernaryExpr(Expr.Ternary expr) {
-        return parenthesize("tern", expr.expression, expr.left, expr.right);
+        // return parenthesize("tern", expr.expression, expr.left, expr.right);
+        return parenthesize("", expr.expression, new Expr.Literal("?"), expr.left, new Expr.Literal(":"), expr.right);
     }
 
     private String parenthesize(String name, Expr... exprs) {
+        boolean appendSpace = true;
         StringBuilder builder = new StringBuilder();
 
-        builder.append("(").append(name);
+        builder.append("(");
+        if (name.isEmpty()) {
+            appendSpace = false;
+        } else {
+            builder.append(name);
+        }
+
         for (Expr expr : exprs) {
-            builder.append(" ");
+            if (appendSpace) {
+                builder.append(" ");
+            } else {
+                appendSpace = true;
+            }
             builder.append(expr.accept(this));
         }
         builder.append(")");
