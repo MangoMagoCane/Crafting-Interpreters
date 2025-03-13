@@ -17,6 +17,14 @@ class Interpreter implements Expr.Visitor<Object>,
         }
     }
 
+    public void interpret(Expr expression) {
+        try {
+            System.out.println(stringify(evaluate(expression)));
+        } catch (RuntimeError error) {
+            Lox.runtimeError(error);
+        }
+    }
+
     @Override
     public Object visitAssignExpr(Expr.Assign expr) {
         Object value = evaluate(expr.value);
@@ -146,14 +154,6 @@ class Interpreter implements Expr.Visitor<Object>,
         return null;
     }
 
-    private Object evaluate(Expr expr) {
-        return expr.accept(this);
-    }
-
-    private Object execute(Stmt stmt) {
-        return stmt.accept(this);
-    }
-
     void executeBlock(List<Stmt> statements,
                       Environment environment) {
         Environment previous = this.environment;
@@ -166,6 +166,14 @@ class Interpreter implements Expr.Visitor<Object>,
         } finally {
             this.environment = previous;
         }
+    }
+
+    private Object evaluate(Expr expr) {
+        return expr.accept(this);
+    }
+
+    private void execute(Stmt stmt) {
+        stmt.accept(this);
     }
 
     private void checkNumberOperand(Token operator, Object operand) {
