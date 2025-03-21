@@ -16,6 +16,14 @@ class AstPrinter implements Expr.Visitor<String> {
     }
 
     @Override
+    public String visitCallExpr(Expr.Call expr) {
+        Expr[] exprArgs = new Expr[expr.arguments.size()];
+        exprArgs[0] = expr.callee;
+        expr.arguments.toArray(exprArgs);
+        return parenthesize("call", exprArgs);
+    }
+
+    @Override
     public String visitGroupingExpr(Expr.Grouping expr) {
         return parenthesize("group", expr.expression);
     }
@@ -46,12 +54,12 @@ class AstPrinter implements Expr.Visitor<String> {
         return expr.name.lexeme;
     }
 
-
     private String parenthesize(Expr... exprs) {
         return parenthesize("", exprs);
     }
 
     private String parenthesize(String name, Expr... exprs) {
+        System.out.println(name + " " + exprs.length);
         boolean appendSpace = true;
         StringBuilder builder = new StringBuilder();
 
@@ -74,4 +82,27 @@ class AstPrinter implements Expr.Visitor<String> {
 
         return builder.toString();
     }
+
+    // private String parenthesize(String name, List<Expr> exprs) {
+    //     StringBuilder builder = new StringBuilder();
+    //
+    //     builder.append("(");
+    //     if (name.isEmpty()) {
+    //         appendSpace = false;
+    //     } else {
+    //         builder.append(name);
+    //     }
+    //
+    //     for (Expr expr : exprs) {
+    //         if (appendSpace) {
+    //             builder.append(" ");
+    //         } else {
+    //             appendSpace = true;
+    //         }
+    //         builder.append(expr.accept(this));
+    //     }
+    //     builder.append(")");
+    //
+    //     return builder.toString();
+    // }
 }

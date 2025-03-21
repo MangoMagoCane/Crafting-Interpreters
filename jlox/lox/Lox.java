@@ -15,7 +15,6 @@ public class Lox {
     static boolean printReport = true;
 
     public static void main(String[] args) throws IOException {
-        System.out.println(args[0]);
         if (args.length > 1) {
             System.out.println("Usage: jlox [script]");
             System.exit(64);
@@ -42,28 +41,41 @@ public class Lox {
             System.out.print("> ");
             String line = reader.readLine();
             if (line == null) break;
-            run(line);
+            run(line, true);
             hadError = false;
         }
     }
 
     private static void run(String source) {
+        run(source, false);
+    }
+
+    private static void run(String source, boolean asPossibleExpression) {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         Parser parser = new Parser(tokens);
+
+        if (!asPossibleExpression) {
+            List<Stmt> statements = parser.parse();
+            if (hadError) return;
+            interpreter.interpret(statements);
+            return;
+        }
 
         printReport = false;
         List<Stmt> statements = parser.parse();
         printReport = true;
 
-        if (hadError) {
-            parser.reset();
-            Expr expression = parser.parseExpression();
-            if (expression != null) interpreter.interpret(expression);
+        if (!hadError) {
+            interpreter.interpret(statements);
             return;
         }
 
-        interpreter.interpret(statements);
+        parser.reset();
+        Expr expression = parser.parseExpression();
+        if (expression != null) interpreter.interpret(expression);
+        return;
+
     }
 
     static void error(int line, String message) {
