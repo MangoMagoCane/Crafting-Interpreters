@@ -10,13 +10,12 @@ import static lox.TokenType.*;
 class Scanner {
     private final String source;
     private final List<Token> tokens = new ArrayList<>();
-    private static final Map<String, TokenType> keywords;
+    private static final Map<String, TokenType> keywords = new HashMap<>();
     private int start = 0;
     private int current = 0;
     private int line = 1;
 
     static {
-        keywords = new HashMap<>();
         keywords.put("and", AND);
         keywords.put("class", CLASS);
         keywords.put("else", ELSE);

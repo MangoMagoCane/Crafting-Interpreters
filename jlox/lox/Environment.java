@@ -7,10 +7,6 @@ class Environment {
     final Environment enclosing;
     private final Map<String, Object> values = new HashMap<>();
 
-    void define(String name, Object value) {
-        values.put(name, value);
-    }
-
     Environment() {
         enclosing = null;
     }
@@ -19,7 +15,11 @@ class Environment {
         this.enclosing = enclosing;
     }
 
-    Object get(Token name) {
+    public void define(String name, Object value) {
+        values.put(name, value);
+    }
+
+    public Object get(Token name) {
         if (values.containsKey(name.lexeme)) {
             return values.get(name.lexeme);
         }
@@ -30,13 +30,23 @@ class Environment {
                 "Undefined variable '" + name.lexeme + "'");
     }
 
-    void assign(Token name, Object value) {
+    public void assign(Token name, Object value) {
         if (values.containsKey(name.lexeme)) {
             values.put(name.lexeme, value);
             return;
         }
 
+        if (enclosing != null) {
+            enclosing.assign(name, value);
+            return;
+        }
+
         throw new RuntimeError(name,
                 "Undefined variable '" + name.lexeme + "'");
+    }
+
+    private void printTable() {
+        System.out.println("env:");
+        values.forEach((key, value) -> System.out.println("  " + key + " " + value));
     }
 }

@@ -15,6 +15,7 @@ public class Lox {
     static boolean printReport = true;
 
     public static void main(String[] args) throws IOException {
+        System.out.println(args[0]);
         if (args.length > 1) {
             System.out.println("Usage: jlox [script]");
             System.exit(64);
@@ -58,11 +59,9 @@ public class Lox {
         if (hadError) {
             parser.reset();
             Expr expression = parser.parseExpression();
-            if (expression != null) {
-                interpreter.interpret(expression);
-            }
+            if (expression != null) interpreter.interpret(expression);
             return;
-        } 
+        }
 
         interpreter.interpret(statements);
     }

@@ -4,6 +4,7 @@ build lox/Lox.java:
 	javac -d $(JLOX_PATH) lox/Lox.java
 
 run:
+	# java -cp $(JLOX_PATH) lox.Lox $(ARGS)
 	java -cp $(JLOX_PATH) lox.Lox $(ARGS)
 
 gen_ast:

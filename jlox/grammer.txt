@@ -3,10 +3,12 @@
 expression  → assignment ;
 assignment  → IDENTIFIER "=" assignment 
             | comma ;
-comma       → ternary ( "," ternary )* ;
+comma       → logical_or ( "," logical_or )* ;
+logical_or  → logical_and ( "or" logical_and )* ;
+logical_and → ternaryRL ( "and" ternaryRL )* ;
 ternaryRL   → ternaryLR "?" ternaryLR ":" ternaryRL
             | ternaryLR ;                                    (C)
-ternaryLR   → equality ( "?." equality ":" equality )* ;    (php)
+ternaryLR   → equality ( "?." equality ":" equality )* ;     (php)
 equality    → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison  → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term        → factor ( ( "-" | "+" ) factor )* ;
@@ -25,8 +27,17 @@ declaration    → varDecl
 varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
 statement      → printStmt
                | prinSexprtStmt
-               | block;
+               | forStmt
+               | whileStmt
+               | ifStmt
+               | block
                | exprStmt ;
+forStmt        → "for" "(" ( varDecl | exprStmt | ";" ")
+                 expression? ";"
+                 expression? ")" statement ;
+whileStmt      → "while" "(" expression ")" statement ;
+ifStmt         → "if" "(" expression ")" statement
+               ( "else" statement )? ;
 block          → "{" declaration* "}" ;
 exprStmt       → expression ";" ;
 printStmt      → "print" expression ";" ;
