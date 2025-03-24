@@ -10,6 +10,7 @@ enum TokenType {
     EQUAL, EQUAL_EQUAL,
     GREATER, GREATER_EQUAL,
     LESS, LESS_EQUAL,
+    EQUAL_GREATER,
 
     // Literals.
     IDENTIFIER, STRING, NUMBER,

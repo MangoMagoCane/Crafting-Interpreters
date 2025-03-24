@@ -1,9 +1,13 @@
 --expressions:
 
 expression     → comma ;
-nonCommaExpr   → assignment ;
+nonCommaExpr   → lambdaNonComma ;
+lambda         → ( parameters | "(" parameters? ")" ) "=>" ( expression | block )
+               | comma ;
+lambdaNonComma → ( parameters | "(" parameters? ")" ) "=>" ( expression | block )
+               | assignment ;
 comma          → assignment ( "," assignment )* ;
-assignment     → IDENTIFIER "=" assignment 
+assignment     → IDENTIFIER "=" assignment
                | logical_or ;
 logical_or     → logical_and ( "or" logical_and )* ;
 logical_and    → ternaryRL ( "and" ternaryRL )* ;
@@ -38,6 +42,7 @@ statement      → printStmt
                | ifStmt
                | block
                | exprStmt ;
+returnStmt     → "return" expression? ";" ;
 forStmt        → "for" "(" ( varDecl | exprStmt | ";" ")
                  expression? ";"
                  expression? ")" statement ;

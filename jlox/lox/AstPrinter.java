@@ -7,25 +7,36 @@ class AstPrinter implements Expr.Visitor<String> {
 
     @Override
     public String visitAssignExpr(Expr.Assign expr) {
-        return parenthesize("=", new Expr.Literal(expr.name.lexeme), expr.value);
+        return parenthesize("= ", new Expr.Literal(expr.name.lexeme), expr.value);
     }
 
     @Override
     public String visitBinaryExpr(Expr.Binary expr) {
-        return parenthesize(expr.operator.lexeme, expr.left, expr.right);
+        return parenthesize(expr.operator.lexeme + " ", expr.left, expr.right);
     }
 
     @Override
     public String visitCallExpr(Expr.Call expr) {
-        Expr[] exprArgs = new Expr[expr.arguments.size()];
+        int argsSize = expr.arguments.size();
+        Expr[] exprArgs = new Expr[argsSize + 1];
+
         exprArgs[0] = expr.callee;
-        expr.arguments.toArray(exprArgs);
-        return parenthesize("call", exprArgs);
+        for (int i = 0; i < argsSize; i++) {
+            exprArgs[i+1] = expr.arguments.get(i);
+        }
+
+        return parenthesize("#'", exprArgs);
+    }
+
+    @Override
+    public String visitFunctionExpr(Expr.Function expr) {
+        // return parenthesize(); // TODO
+        return "<fn>";
     }
 
     @Override
     public String visitGroupingExpr(Expr.Grouping expr) {
-        return parenthesize("group", expr.expression);
+        return parenthesize("group ", expr.expression);
     }
 
     @Override
@@ -49,6 +60,7 @@ class AstPrinter implements Expr.Visitor<String> {
         return parenthesize(expr.expression, new Expr.Literal("?"), expr.left, new Expr.Literal(":"), expr.right);
 
     }
+
     @Override
     public String visitVariableExpr(Expr.Variable expr) {
         return expr.name.lexeme;
@@ -59,16 +71,15 @@ class AstPrinter implements Expr.Visitor<String> {
     }
 
     private String parenthesize(String name, Expr... exprs) {
-        System.out.println(name + " " + exprs.length);
-        boolean appendSpace = true;
+        boolean appendSpace = false;
         StringBuilder builder = new StringBuilder();
 
-        builder.append("(");
         if (name.isEmpty()) {
-            appendSpace = false;
-        } else {
-            builder.append(name);
+            appendSpace = true;
         }
+
+        builder.append("(");
+        builder.append(name);
 
         for (Expr expr : exprs) {
             if (appendSpace) {
@@ -82,27 +93,4 @@ class AstPrinter implements Expr.Visitor<String> {
 
         return builder.toString();
     }
-
-    // private String parenthesize(String name, List<Expr> exprs) {
-    //     StringBuilder builder = new StringBuilder();
-    //
-    //     builder.append("(");
-    //     if (name.isEmpty()) {
-    //         appendSpace = false;
-    //     } else {
-    //         builder.append(name);
-    //     }
-    //
-    //     for (Expr expr : exprs) {
-    //         if (appendSpace) {
-    //             builder.append(" ");
-    //         } else {
-    //             appendSpace = true;
-    //         }
-    //         builder.append(expr.accept(this));
-    //     }
-    //     builder.append(")");
-    //
-    //     return builder.toString();
-    // }
 }

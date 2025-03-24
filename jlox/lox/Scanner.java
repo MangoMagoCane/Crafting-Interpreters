@@ -64,7 +64,7 @@ class Scanner {
         case ';': addToken(SEMICOLON); break;
         case '*': addToken(STAR); break;
         case '!': addToken(match('=') ? BANG_EQUAL : BANG); break;
-        case '=': addToken(match('=') ? EQUAL_EQUAL : EQUAL); break;
+        case '=': addToken(match('=') ? EQUAL_EQUAL : match('>') ? EQUAL_GREATER: EQUAL); break;
         case '<': addToken(match('=') ? LESS_EQUAL : LESS); break;
         case '>': addToken(match('=') ? GREATER_EQUAL : GREATER); break;
         case '?': addToken(match('.') ? EROTEME_DOT: EROTEME); break;

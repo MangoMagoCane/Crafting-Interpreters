@@ -1,0 +1,11 @@
+var foo = (f, x, y) => {
+    print(f + " " + x + " " + y);
+    print(f(x, y));
+};
+
+printSexpr foo(x,y => { return x+y; }, 8, 9);
+foo(x,y => x+y, 8, 9);
+print(((((1+1)))));
+print((() => 2)());
+
+//print((x => 2)(0));

@@ -119,6 +119,7 @@ class Interpreter implements Expr.Visitor<Object>,
         }
 
         if (!(callee instanceof LoxCallable)) {
+            System.out.println("type: " + callee.getClass());
             throw new RuntimeError(expr.paren,
                     "Can only call functions and classes.");
         }
@@ -133,6 +134,9 @@ class Interpreter implements Expr.Visitor<Object>,
         return function.call(this, arguments);
     }
 
+    public Object visitFunctionExpr(Expr.Function expr) {
+        return new LoxFunction(expr, environment);
+    }
 
     @Override
     public Object visitGroupingExpr(Expr.Grouping expr) {
@@ -202,8 +206,10 @@ class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
-        LoxFunction function = new LoxFunction(stmt);
-        environment.define(stmt.name.lexeme, function);
+        LoxFunction function = new LoxFunction(stmt.function, environment);
+        if (stmt.function.name != null) {
+            environment.define(stmt.function.name.lexeme, function);
+        }
         return null;
     }
 
@@ -213,7 +219,6 @@ class Interpreter implements Expr.Visitor<Object>,
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
         }
-
         environment.define(stmt.name.lexeme, value);
         return null;
     }
@@ -236,6 +241,13 @@ class Interpreter implements Expr.Visitor<Object>,
         return null;
     }
 
+    @Override
+    public Void visitReturnStmt(Stmt.Return stmt) {
+        Object value = null;
+        if (stmt.value != null) value = evaluate(stmt.value);
+        throw new Return(value);
+    }
+
     // @Override
     // public Void visitPrintStmt(Stmt.Print stmt) {
     //     Object value = evaluate(stmt.expression);
@@ -245,9 +257,10 @@ class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitPrintSexprStmt(Stmt.PrintSexpr stmt) {
-        Object value = evaluate(stmt.expression);
+        // Object value = evaluate(stmt.expression);
         String astOutput = astPrinter.print(stmt.expression);
-        System.out.println(astOutput + " → " + stringify(value));
+        System.out.println(astOutput);
+        // System.out.println(astOutput + " → " + stringify(value));
         return null;
     }
 

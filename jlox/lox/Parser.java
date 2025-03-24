@@ -17,7 +17,7 @@ class Parser {
     }
 
     public void reset() {
-        current = 0;
+        rewind(0);
     }
 
     public List<Stmt> parse() {
@@ -50,14 +50,27 @@ class Parser {
     }
 
     private Stmt statement() {
+        if (match(RETURN)) return returnStatement();
         if (match(FOR)) return forStatement();
-        if (match(WHILE)) return ifStatement();
+        if (match(WHILE)) return whileStatement();
         if (match(IF)) return ifStatement();
         // if (match(PRINT)) return printStatement();
         if (match(PRINT_SEXPR)) return printSexprStatement();
         if (match(LEFT_BRACE)) return new Stmt.Block(block());
 
         return expressionStatement();
+    }
+
+    private Stmt returnStatement() {
+        Token keyword = previous();
+        Expr value = null;
+
+        if (!check(SEMICOLON)) {
+            value = expression();
+        }
+        consume(SEMICOLON, "Exect ';' after return value.");
+
+        return new Stmt.Return(keyword, value);
     }
 
     private Stmt forStatement() {
@@ -116,7 +129,7 @@ class Parser {
     private Stmt ifStatement() {
         consume(LEFT_PAREN, "Expect '(' after 'if'.");
         Expr condition = expression();
-        consume(LEFT_PAREN, "Expect ')' after if condition.");
+        consume(RIGHT_PAREN, "Expect ')' after if condition.");
 
         Stmt thenBranch = statement();
         Stmt elseBranch = null;
@@ -157,7 +170,10 @@ class Parser {
     }
 
     private Stmt.Function function(String kind) {
-        Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
+        Token name = null;
+        if (check(IDENTIFIER)) {
+            name = advance();
+        }
         consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
         List<Token> parameters = new ArrayList<>();
 
@@ -175,35 +191,75 @@ class Parser {
         consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
         List<Stmt> body = block();
 
-        return new Stmt.Function(name, parameters, body);
+        return new Stmt.Function(new Expr.Function(name, parameters, body));
     }
 
     private Stmt varDeclaration() {
+        Expr initializer = null;
         Token name = consume(IDENTIFIER, "Expect variable name.");
 
-        Expr initializer = null;
-        if (match(EQUAL)) {
-            initializer = expression();
-        }
-
+        if (match(EQUAL)) initializer = expression();
         consume(SEMICOLON, "Expect ';' after variable declaration.");
+
         return new Stmt.Var(name, initializer);
     }
 
     private Expr expression() {
-        return comma();
+        return lambda();
     }
 
     private Expr nonCommaExpression() {
-        return assignment();
+        return lambda(false);
+    }
+
+    private Expr lambda() {
+        return lambda(true);
+    }
+
+    private Expr lambda(boolean commaParseable) {
+        final int tokenIndex = currentIndex();
+        final List<Token> parameters = new ArrayList<>();
+        TokenType delimeter = GREATER_EQUAL;
+
+        if (match(LEFT_PAREN)) delimeter = RIGHT_PAREN;
+        if (!check(delimeter)) {
+            do {
+                if (!check(IDENTIFIER)) {
+                    rewind(tokenIndex);
+                    return commaParseable ? comma() : assignment();
+                }
+                parameters.add(advance());
+            } while (match(COMMA));
+        }
+
+        if (delimeter == RIGHT_PAREN) {
+            consume(RIGHT_PAREN, "EXPECT ')' after lambda parameters.");
+        } else if (parameters.size() == 0) {
+            error(peek(), "EXPECT '()' or parameters.");
+        }
+
+        if (!match(EQUAL_GREATER)) {
+            rewind(tokenIndex);
+            return commaParseable ? comma() : assignment();
+        }
+
+        List<Stmt> body;
+        if (match(LEFT_BRACE)) {
+            body = block();
+        } else {
+            body = new ArrayList<>();
+            body.add(new Stmt.Return(peek(), nonCommaExpression()));
+        }
+
+        return new Expr.Function(null, parameters, body);
     }
 
     private Expr comma() {
         Expr expr = assignment();
 
         while (match(COMMA)) {
-            Token operator = previous();
-            Expr right = assignment();
+            final Token operator = previous();
+            final Expr right = assignment();
             expr = new Expr.Binary(expr, operator, right);
         }
 
@@ -404,7 +460,6 @@ class Parser {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -433,6 +488,14 @@ class Parser {
 
     private Token previous() {
         return tokens.get(current - 1);
+    }
+
+    private int currentIndex() {
+        return current;
+    }
+
+    private void rewind(int index) {
+        current = Math.max(0, index);
     }
 
     private ParseError error(Token token, String message) {
