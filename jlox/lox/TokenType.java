@@ -7,10 +7,9 @@ enum TokenType {
 
     // One or two character tokens.
     BANG, BANG_EQUAL,
-    EQUAL, EQUAL_EQUAL,
+    EQUAL, EQUAL_EQUAL, EQUAL_GREATER,
     GREATER, GREATER_EQUAL,
     LESS, LESS_EQUAL,
-    EQUAL_GREATER,
 
     // Literals.
     IDENTIFIER, STRING, NUMBER,
@@ -18,6 +17,7 @@ enum TokenType {
     // Keywords.
     AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR,
     PRINT, PRINT_SEXPR, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
+    BREAK, CONTINUE,
 
     EOF
 }

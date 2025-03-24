@@ -10,6 +10,7 @@ abstract class Stmt {
         R visitVarStmt(Var stmt);
         R visitWhileStmt(While stmt);
         R visitIfStmt(If stmt);
+        R visitLoopControlStmt(LoopControl stmt);
         R visitReturnStmt(Return stmt);
         R visitPrintSexprStmt(PrintSexpr stmt);
     }
@@ -99,6 +100,19 @@ abstract class Stmt {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitIfStmt(this);
+        }
+    }
+
+    static class LoopControl extends Stmt {
+        final Token keyword;
+
+        LoopControl(Token keyword) {
+            this.keyword = keyword;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitLoopControlStmt(this);
         }
     }
 

@@ -4,8 +4,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 class Environment {
+    class Variable {
+        public Object value;
+        public boolean assignedTo;
+
+        Variable(Object object) {
+            this(object, false);
+        }
+
+        Variable(Object object, boolean assigned) {
+            value = object;
+            assignedTo = assigned;
+        }
+    }
+
     final Environment enclosing;
-    private final Map<String, Object> values = new HashMap<>();
+    private final Map<String, Variable> values = new HashMap<>();
+
 
     Environment() {
         enclosing = null;
@@ -16,12 +31,19 @@ class Environment {
     }
 
     public void define(String name, Object value) {
-        values.put(name, value);
+        define(name, value, true);
+    }
+
+    public void define(String name, Object value, boolean initialized) {
+        values.put(name, new Variable(value, initialized));
     }
 
     public Object get(Token name) {
         if (values.containsKey(name.lexeme)) {
-            return values.get(name.lexeme);
+            Variable variable = values.get(name.lexeme);
+            if (variable.assignedTo) return variable.value;
+            throw new RuntimeError(name,
+                    "Unassigned variable '" + name.lexeme + "' accessed.");
         }
 
         if (enclosing != null) return enclosing.get(name);
@@ -32,7 +54,9 @@ class Environment {
 
     public void assign(Token name, Object value) {
         if (values.containsKey(name.lexeme)) {
-            values.put(name.lexeme, value);
+            Variable variable = values.get(name.lexeme);
+            variable.value = value;
+            variable.assignedTo = true;
             return;
         }
 

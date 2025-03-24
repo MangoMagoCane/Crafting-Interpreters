@@ -50,30 +50,50 @@ class Parser {
     }
 
     private Stmt statement() {
-        if (match(RETURN)) return returnStatement();
+        if (match(LEFT_BRACE)) return new Stmt.Block(block());
+        if (match(IF)) return ifStatement();
         if (match(FOR)) return forStatement();
         if (match(WHILE)) return whileStatement();
-        if (match(IF)) return ifStatement();
+        if (match(RETURN)) return returnStatement();
+        if (match(BREAK, CONTINUE)) return loopControlStatement();
         // if (match(PRINT)) return printStatement();
         if (match(PRINT_SEXPR)) return printSexprStatement();
-        if (match(LEFT_BRACE)) return new Stmt.Block(block());
 
         return expressionStatement();
     }
 
-    private Stmt returnStatement() {
-        Token keyword = previous();
-        Expr value = null;
-
-        if (!check(SEMICOLON)) {
-            value = expression();
-        }
-        consume(SEMICOLON, "Exect ';' after return value.");
-
-        return new Stmt.Return(keyword, value);
+    private Stmt expressionStatement() {
+        Expr value = expression();
+        consume(SEMICOLON, "Expect ';' after value.");
+        return new Stmt.Expression(value);
     }
 
-    private Stmt forStatement() {
+    private List<Stmt> block() {
+        List<Stmt> statements = new ArrayList<>();
+
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+            statements.add(declaration());
+        }
+
+        consume(RIGHT_BRACE, "Expect '}' after block.");
+        return statements;
+    }
+
+    private Stmt ifStatement() {
+        consume(LEFT_PAREN, "Expect '(' after 'if'.");
+        Expr condition = expression();
+        consume(RIGHT_PAREN, "Expect ')' after if condition.");
+
+        Stmt thenBranch = statement();
+        Stmt elseBranch = null;
+        if (match(ELSE)) {
+            elseBranch = statement();
+        }
+
+        return new Stmt.If(condition, thenBranch, elseBranch);
+    }
+
+    private Stmt forStatement() { //TODO continue doesn't work if for is a derived expression.
         consume(LEFT_PAREN, "Expect '(' after 'for'.");
 
         Stmt initializer;
@@ -126,18 +146,22 @@ class Parser {
         return new Stmt.While(condition, body);
     }
 
-    private Stmt ifStatement() {
-        consume(LEFT_PAREN, "Expect '(' after 'if'.");
-        Expr condition = expression();
-        consume(RIGHT_PAREN, "Expect ')' after if condition.");
+    private Stmt loopControlStatement() {
+        Token keyword = previous();
+        consume(SEMICOLON, "Expect ';' after loop control statement.");
+        return new Stmt.LoopControl(keyword);
+    }
 
-        Stmt thenBranch = statement();
-        Stmt elseBranch = null;
-        if (match(ELSE)) {
-            elseBranch = statement();
+    private Stmt returnStatement() {
+        Token keyword = previous();
+        Expr value = null;
+
+        if (!check(SEMICOLON)) {
+            value = expression();
         }
+        consume(SEMICOLON, "Expect ';' after return value.");
 
-        return new Stmt.If(condition, thenBranch, elseBranch);
+        return new Stmt.Return(keyword, value);
     }
 
     // private Stmt printStatement() {
@@ -150,23 +174,6 @@ class Parser {
         Expr value = expression();
         consume(SEMICOLON, "Expect ';' after value.");
         return new Stmt.PrintSexpr(value);
-    }
-
-    private List<Stmt> block() {
-        List<Stmt> statements = new ArrayList<>();
-
-        while (!check(RIGHT_BRACE) && !isAtEnd()) {
-            statements.add(declaration());
-        }
-
-        consume(RIGHT_BRACE, "Expect '}' after block.");
-        return statements;
-    }
-
-    private Stmt expressionStatement() {
-        Expr value = expression();
-        consume(SEMICOLON, "Expect ';' after value.");
-        return new Stmt.Expression(value);
     }
 
     private Stmt.Function function(String kind) {

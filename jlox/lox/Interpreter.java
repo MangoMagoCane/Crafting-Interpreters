@@ -219,14 +219,24 @@ class Interpreter implements Expr.Visitor<Object>,
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
         }
-        environment.define(stmt.name.lexeme, value);
+        environment.define(stmt.name.lexeme, value, stmt.initializer != null);
         return null;
     }
 
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
         while (isTruthy(evaluate(stmt.condition))) {
-            execute(stmt.body);
+            try {
+                execute(stmt.body);
+            } catch (LoopControl controlStmt) {
+                if (controlStmt.keyword.type == TokenType.BREAK) {
+                    break;
+                } else if (controlStmt.keyword.type == TokenType.CONTINUE) {
+                    continue;
+                } else {
+                    throw new RuntimeError(controlStmt.keyword, "Invalid loop control statement.");
+                }
+            }
         }
         return null;
     }
@@ -239,6 +249,11 @@ class Interpreter implements Expr.Visitor<Object>,
             execute(stmt.elseBranch);
         }
         return null;
+    }
+
+    @Override
+    public Void visitLoopControlStmt(Stmt.LoopControl stmt) {
+        throw new LoopControl(stmt.keyword);
     }
 
     @Override
@@ -257,10 +272,10 @@ class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitPrintSexprStmt(Stmt.PrintSexpr stmt) {
-        // Object value = evaluate(stmt.expression);
+        Object value = evaluate(stmt.expression);
         String astOutput = astPrinter.print(stmt.expression);
-        System.out.println(astOutput);
-        // System.out.println(astOutput + " → " + stringify(value));
+        // System.out.println(astOutput);
+        System.out.println(astOutput + " → " + stringify(value));
         return null;
     }
 

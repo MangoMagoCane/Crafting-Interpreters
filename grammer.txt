@@ -1,58 +1,61 @@
 --expressions:
 
-expression     → comma ;
-nonCommaExpr   → lambdaNonComma ;
-lambda         → ( parameters | "(" parameters? ")" ) "=>" ( expression | block )
-               | comma ;
-lambdaNonComma → ( parameters | "(" parameters? ")" ) "=>" ( expression | block )
-               | assignment ;
-comma          → assignment ( "," assignment )* ;
-assignment     → IDENTIFIER "=" assignment
-               | logical_or ;
-logical_or     → logical_and ( "or" logical_and )* ;
-logical_and    → ternaryRL ( "and" ternaryRL )* ;
-ternaryRL      → ternaryLR "?" ternaryLR ":" ternaryRL
-               | ternaryLR ;                                    (C)
-ternaryLR      → equality ( "?." equality ":" equality )* ;     (php)
-equality       → comparison ( ( "!=" | "==" ) comparison )* ;
-comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-term           → factor ( ( "-" | "+" ) factor )* ;
-factor         → unary ( ( "/" | "*" ) unary )* ;
-unary          → ( "!" | "-" ) unary | call ;
-call           → primary ( "(" arguments? ")" )* ;
-primary        → NUMBER | STRING | "true" | "false" | "nil"
-               | "(" expression ")"
-               | IDENTIFIER ;
+expression      → comma ;
+nonCommaExpr    → lambdaNonComma ;
+lambda          → ( parameters | "(" parameters? ")" ) "=>" ( expression | block )
+                | comma ;
+lambdaNonComma  → ( parameters | "(" parameters? ")" ) "=>" ( expression | block )
+                | assignment ;
+comma           → assignment ( "," assignment )* ;
+assignment      → IDENTIFIER "=" assignment
+                | logical_or ;
+logical_or      → logical_and ( "or" logical_and )* ;
+logical_and     → ternaryRL ( "and" ternaryRL )* ;
+ternaryRL       → ternaryLR "?" ternaryLR ":" ternaryRL
+                | ternaryLR ;                                    (C)
+ternaryLR       → equality ( "?." equality ":" equality )* ;     (php)
+equality        → comparison ( ( "!=" | "==" ) comparison )* ;
+comparison      → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term            → factor ( ( "-" | "+" ) factor )* ;
+factor          → unary ( ( "/" | "*" ) unary )* ;
+unary           → ( "!" | "-" ) unary | call ;
+call            → primary ( "(" arguments? ")" )* ;
+primary         → NUMBER | STRING | "true" | "false" | "nil"
+                | "(" expression ")"
+                | IDENTIFIER ;
 
 --declarations:
 
-program        → declaration* EOF ;
-declaration    → funDecl
-               | varDecl
-               | statement ;
-funDecl        → "fun" function ;
-varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
+program         → declaration* EOF ;
+declaration     → funDecl
+                | varDecl
+                | statement ;
+funDecl         → "fun" function ;
+varDecl         → "var" IDENTIFIER ( "=" expression )? ";" ;
 
 --statements:
 
-statement      → printStmt
-               | prinSexprtStmt
-               | forStmt
-               | whileStmt
-               | ifStmt
-               | block
-               | exprStmt ;
-returnStmt     → "return" expression? ";" ;
-forStmt        → "for" "(" ( varDecl | exprStmt | ";" ")
-                 expression? ";"
-                 expression? ")" statement ;
-whileStmt      → "while" "(" expression ")" statement ;
-ifStmt         → "if" "(" expression ")" statement
-               ( "else" statement )? ;
-block          → "{" declaration* "}" ;
-exprStmt       → expression ";" ;
-printStmt      → "print" expression ";" ; // print has been written out.
-printSexprStmt → "printSexpr" expression ";" ;
+statement       → exprStmt
+                | block
+                | ifStmt
+                | forStmt
+                | whileStmt
+                | loopControlStmt
+                | returnStmt
+                | printStmt
+                | prinSexprtStmt ;
+exprStmt        → expression ";" ;
+block           → "{" declaration* "}" ;
+ifStmt          → "if" "(" expression ")" statement
+                ( "else" statement )? ;
+forStmt         → "for" "(" ( varDecl | exprStmt | ";" ")
+                  expression? ";"
+                  expression? ")" statement ;
+whileStmt       → "while" "(" expression ")" statement ;
+loopControlStmt → ( "break" | "continue" ) ";" ;
+returnStmt      → "return" expression? ";" ;
+printStmt       → "print" expression ";" ; // print has been written out.
+printSexprStmt  → "printSexpr" expression ";" ;
 
 --utility:
 
