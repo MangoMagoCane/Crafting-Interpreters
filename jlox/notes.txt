@@ -1,3 +1,4 @@
 additions to make:
     bitwise operators
     error production for binary operators (p. 91)
+    change for so it is no longer a derived statement for continue to be implemented correctly

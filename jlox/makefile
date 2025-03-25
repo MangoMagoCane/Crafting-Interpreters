@@ -1,7 +1,7 @@
 JLOX_PATH := classes
 
 build lox/Lox.java:
-	javac -d $(JLOX_PATH) lox/Lox.java
+	javac -Xdiags:verbose -d $(JLOX_PATH) lox/Lox.java
 
 run:
 	# java -cp $(JLOX_PATH) lox.Lox $(ARGS)
