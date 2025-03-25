@@ -50,14 +50,16 @@ public class Lox {
         run(source, false);
     }
 
-    private static void run(String source, boolean asPossibleExpression) {
+    private static void run(String source, boolean isPossibleExpression) {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         Parser parser = new Parser(tokens);
+        Resolver resolver = new Resolver(interpreter);
 
-        if (!asPossibleExpression) {
+        if (!isPossibleExpression) {
             List<Stmt> statements = parser.parse();
             if (hadError) return;
+            resolver.resolve(statements);
             interpreter.interpret(statements);
             return;
         }
@@ -67,33 +69,37 @@ public class Lox {
         printReport = true;
 
         if (!hadError) {
+            resolver.resolve(statements);
             interpreter.interpret(statements);
             return;
         }
 
         parser.reset();
         Expr expression = parser.parseExpression();
-        if (expression != null) interpreter.interpret(expression);
+        if (expression != null) {
+            resolver.resolve(expression);
+            interpreter.interpret(expression);
+        }
         return;
+    }
 
+    static void warning(Token token, String message) {
+        error(token, message, true);
     }
 
     static void error(int line, String message) {
-        report(line, "", message);
-    }
-
-    private static void report(int line, String where, String message) {
-        if (printReport) {
-            System.err.println("[line " + line + "] Error" + where + ": " + message);
-        } 
-        hadError = true;
+        report(line, "", message, false);
     }
 
     static void error(Token token, String message) {
+        error(token, message, false);
+    }
+
+    static void error(Token token, String message, boolean isWarning) {
         if (token.type == TokenType.EOF) {
-            report(token.line, " at end", message);
+            report(token.line, " at end", message, isWarning);
         } else {
-            report(token.line, " at '" + token.lexeme + "'", message);
+            report(token.line, " at '" + token.lexeme + "'", message, isWarning);
         }
     }
 
@@ -101,5 +107,12 @@ public class Lox {
         System.err.println(error.getMessage() +
                 "\n[line " + error.token.line + "]");
         hadRuntimeError = true;
+    }
+
+    private static void report(int line, String where, String message, boolean isWarning) {
+        if (printReport) {
+            System.err.println("[line " + line + "] " + (isWarning ? "Warning" : "Error")+ where + ": " + message);
+        }
+        hadError = !isWarning;
     }
 }

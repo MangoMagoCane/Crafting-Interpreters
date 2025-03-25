@@ -29,7 +29,7 @@ class AstPrinter implements Expr.Visitor<String> {
     }
 
     @Override
-    public String visitFunctionExpr(Expr.Function expr) {
+    public String visitLambdaExpr(Expr.Lambda expr) {
         // return parenthesize(); // TODO
         return "<fn>";
     }

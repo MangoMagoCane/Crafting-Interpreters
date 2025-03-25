@@ -198,7 +198,7 @@ class Parser {
         consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
         List<Stmt> body = block();
 
-        return new Stmt.Function(new Expr.Function(name, parameters, body));
+        return new Stmt.Function(name, new Expr.Lambda(parameters, body));
     }
 
     private Stmt varDeclaration() {
@@ -258,7 +258,7 @@ class Parser {
             body.add(new Stmt.Return(peek(), nonCommaExpression()));
         }
 
-        return new Expr.Function(null, parameters, body);
+        return new Expr.Lambda(parameters, body);
     }
 
     private Expr comma() {

@@ -1,13 +1,15 @@
 package lox;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-class Interpreter implements Expr.Visitor<Object>,
-                             Stmt.Visitor<Void> {
+class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     private static AstPrinter astPrinter = new AstPrinter();
     final Environment globals = new Environment();
     private Environment environment = globals;
+    private final Map<Expr, Integer> locals = new HashMap<>();
 
     Interpreter() {
         globals.define("clock", new LoxCallable() {
@@ -40,7 +42,7 @@ class Interpreter implements Expr.Visitor<Object>,
         });
     }
 
-    public void interpret(List<Stmt> statements) {
+    void interpret(List<Stmt> statements) {
         try {
             for (Stmt statement: statements) {
                 execute(statement);
@@ -50,9 +52,9 @@ class Interpreter implements Expr.Visitor<Object>,
         }
     }
 
-    public void interpret(Expr expression) {
+    void interpret(Expr expr) {
         try {
-            System.out.println(stringify(evaluate(expression)));
+            System.out.println(stringify(evaluate(expr)));
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
@@ -61,7 +63,14 @@ class Interpreter implements Expr.Visitor<Object>,
     @Override
     public Object visitAssignExpr(Expr.Assign expr) {
         Object value = evaluate(expr.value);
-        environment.assign(expr.name, value);
+
+        Integer distance = locals.get(expr);
+        if (distance != null) {
+            environment.assignAt(distance, expr.name, value);
+        } else {
+            globals.assign(expr.name, value);
+        }
+
         return value;
     }
 
@@ -119,7 +128,7 @@ class Interpreter implements Expr.Visitor<Object>,
         }
 
         if (!(callee instanceof LoxCallable)) {
-            System.out.println("type: " + callee.getClass());
+            // System.out.println("type: " + callee.getClass());
             throw new RuntimeError(expr.paren,
                     "Can only call functions and classes.");
         }
@@ -134,7 +143,7 @@ class Interpreter implements Expr.Visitor<Object>,
         return function.call(this, arguments);
     }
 
-    public Object visitFunctionExpr(Expr.Function expr) {
+    public Object visitLambdaExpr(Expr.Lambda expr) {
         return new LoxFunction(expr, environment);
     }
 
@@ -189,7 +198,7 @@ class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Object visitVariableExpr(Expr.Variable expr) {
-        return environment.get(expr.name);
+        return lookUpVariable(expr.name, expr);
     }
 
     @Override
@@ -206,10 +215,8 @@ class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
-        LoxFunction function = new LoxFunction(stmt.function, environment);
-        if (stmt.function.name != null) {
-            environment.define(stmt.function.name.lexeme, function);
-        }
+        LoxFunction function = new LoxFunction(stmt.lambda, environment, stmt.name);
+        environment.define(stmt.name.lexeme, function);
         return null;
     }
 
@@ -293,12 +300,25 @@ class Interpreter implements Expr.Visitor<Object>,
         }
     }
 
+    void resolve(Expr expr, int depth) {
+        locals.put(expr, depth);
+    }
+
     private Object evaluate(Expr expr) {
         return expr.accept(this);
     }
 
     private void execute(Stmt stmt) {
         stmt.accept(this);
+    }
+
+    private Object lookUpVariable(Token name, Expr expr) {
+        Integer distance = locals.get(expr);
+        if (distance != null) {
+            return environment.getAt(distance, name.lexeme);
+        } else {
+            return globals.get(name);
+        }
     }
 
     private void checkNumberOperand(Token operator, Object operand) {

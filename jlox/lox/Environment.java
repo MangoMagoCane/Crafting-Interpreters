@@ -21,7 +21,6 @@ class Environment {
     final Environment enclosing;
     private final Map<String, Variable> values = new HashMap<>();
 
-
     Environment() {
         enclosing = null;
     }
@@ -67,6 +66,23 @@ class Environment {
 
         throw new RuntimeError(name,
                 "Undefined variable '" + name.lexeme + "'");
+    }
+
+    Object getAt(int distance, String name) {
+        return ancestor(distance).values.get(name).value;
+    }
+
+    Object assignAt(int distance, Token name, Object value) {
+       return ancestor(distance).values.put(name.lexeme, new Variable(value)).value;
+    }
+
+    Environment ancestor(int distance) {
+        Environment environment = this;
+        for (int i = 0; i < distance; i++) {
+            environment = environment.enclosing;
+        }
+
+        return environment;
     }
 
     private void printTable() {

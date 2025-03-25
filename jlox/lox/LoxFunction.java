@@ -3,12 +3,18 @@ package lox;
 import java.util.List;
 
 class LoxFunction implements LoxCallable {
-    private final Expr.Function declaration;
+    private final Token name;
+    private final Expr.Lambda declaration;
     private final Environment closure;
 
-    LoxFunction(Expr.Function declaration, Environment closure) {
+    LoxFunction(Expr.Lambda declaration, Environment closure) {
+        this(declaration, closure, null);
+    }
+
+    LoxFunction(Expr.Lambda declaration, Environment closure, Token name) {
         this.declaration = declaration;
         this.closure = closure;
+        this.name = name;
     }
 
     @Override
@@ -36,9 +42,9 @@ class LoxFunction implements LoxCallable {
 
     @Override
     public String toString() {
-        if (declaration.name == null) {
+        if (name == null) {
             return "<lambda>";
         }
-        return "<fn " + declaration.name.lexeme + ">";
+        return "<fn " + name.lexeme + ">";
     }
 }

@@ -44,10 +44,12 @@ abstract class Stmt {
     }
 
     static class Function extends Stmt {
-        final Expr.Function function;
+        final Token name;
+        final Expr.Lambda lambda;
 
-        Function(Expr.Function function) {
-            this.function = function;
+        Function(Token name, Expr.Lambda lambda) {
+            this.name = name;
+            this.lambda = lambda;
         }
 
         @Override
