@@ -12,7 +12,7 @@ static void repl(VM *vm) {
     for (;;) {
         printf("> ");
 
-        if (!fgets(line, sizeof (line), stdin)) {
+        if (fgets(line, sizeof (line), stdin) == NULL) {
             printf("\n");
             break;
         }

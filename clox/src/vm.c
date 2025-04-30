@@ -14,7 +14,7 @@ void initVM(VM *vm) {
 }
 
 void freeVM(VM *vm) {
-
+    UNUSED(vm);
 }
 
 void push(VM *vm, Value value) {
@@ -79,10 +79,23 @@ static InterpretResult run(VM *vm) {
 
 #undef READ_BYTE
 #undef READ_CONSTANT
-#undef BINARY_OP 
+#undef BINARY_OP
 }
 
 InterpretResult interpret(VM *vm, const char *source) {
-    compile( source);
-    return INTERPRET_OK;
+    Chunk chunk;
+    initChunk(&chunk);
+
+    if (!compile(source, &chunk)) {
+        freeChunk(&chunk);
+        return INTERPRET_COMPILE_ERROR;
+    }
+
+    vm->chunk = &chunk;
+    vm->ip = vm->chunk->code;
+
+    InterpretResult result = run(vm);
+
+    freeChunk(&chunk);
+    return result;
 }

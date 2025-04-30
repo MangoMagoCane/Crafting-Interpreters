@@ -81,35 +81,71 @@ static void skipWhiteSpace(Scanner *scanner) {
                 return;
             }
             break;
+        case '\n':
+            scanner->line++;
+            advance(scanner);
+            break;
         default:
             return;
         }
     }
 }
 
+static TokenType checkKeyword(Scanner *scanner, int start, int length,
+                              const char *rest, TokenType type) {
+    if (scanner->current - scanner->start == start + length &&
+            memcmp(scanner->start + start, rest, length) == 0) {
+        return type;
+    }
+
+    return TOKEN_IDENTIFIER;
+}
+
 static TokenType identifierType(Scanner *scanner) {
+#define checkKeyword(start, length, rest, type) \
+    checkKeyword(scanner, start, length, rest, type)
+
     switch (scanner->start[0]) {
     case 'a': return checkKeyword(1, 2, "nd", TOKEN_AND);
     case 'c': return checkKeyword(1, 4, "lass", TOKEN_CLASS);
     case 'e': return checkKeyword(1, 3, "lse", TOKEN_ELSE);
+    case 'f':
+        if (scanner->current - scanner->start > 1) {
+            switch (scanner->start[1]) {
+            case 'a': return checkKeyword(2, 3, "lse", TOKEN_FALSE);
+            case 'o': return checkKeyword(2, 1, "r", TOKEN_FOR);
+            case 'u': return checkKeyword(2, 1, "n", TOKEN_FUN);
+            }
+        }
+        break;
     case 'i': return checkKeyword(1, 1, "f", TOKEN_IF);
     case 'n': return checkKeyword(1, 2, "il", TOKEN_NIL);
     case 'o': return checkKeyword(1, 1, "r", TOKEN_OR);
     case 'p': return checkKeyword(1, 4, "rint", TOKEN_PRINT);
     case 'r': return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
     case 's': return checkKeyword(1, 4, "uper", TOKEN_SUPER);
+    case 't':
+        if (scanner->current - scanner->start > 1) {
+            switch (scanner->start[1]) {
+            case 'h': return checkKeyword(2, 2, "is", TOKEN_THIS);
+            case 'r': return checkKeyword(2, 2, "ue", TOKEN_TRUE);
+            }
+        }
+        break;
     case 'v': return checkKeyword(1, 2, "ar", TOKEN_VAR);
     case 'w': return checkKeyword(1, 4, "hile", TOKEN_WHILE);
     }
 
     return TOKEN_IDENTIFIER;
+
+#undef checkKeyword
 }
 
 static Token identifier(Scanner *scanner) {
     while (isAlpha(peek(scanner)) || isDigit(peek(scanner))) {
         advance(scanner);
     }
-    return makeToken(identifierType(scanner));
+    return makeToken(scanner, identifierType(scanner));
 }
 
 static Token number(Scanner *scanner) {
@@ -120,24 +156,24 @@ static Token number(Scanner *scanner) {
         while (isDigit(peek(scanner))) advance(scanner);
     }
 
-    return makeToken(scanner, TOKEN_NUMBER)l
+    return makeToken(scanner, TOKEN_NUMBER);
 }
 
 static Token string(Scanner *scanner) {
     while (peek(scanner) != '"' && !isAtEnd(scanner)) {
         if (peek(scanner) == '\n') scanner->line++;
-        advance();
+        advance(scanner);
     }
 
-    if (isAtEnd(scanner)) return errorToken("Unterminated string.");
+    if (isAtEnd(scanner)) return errorToken(scanner, "Unterminated string.");
 
-    advance(); // Closing quote.
-    return makeString(TOKEN_STRING);
+    advance(scanner); // Closing quote.
+    return makeToken(scanner, TOKEN_STRING);
 }
 
 Token scanToken(Scanner *scanner) {
-#define _makeToken(scanner, token) makeToken(scanner, token)
-#define makeToken(token) _makeToken(scanner, token)
+#define makeToken(token) makeToken(scanner, token)
+
     skipWhiteSpace(scanner);
     scanner->start = scanner->current;
 
@@ -173,9 +209,8 @@ Token scanToken(Scanner *scanner) {
                 match(scanner, '=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
     case '"': return string(scanner);
     }
-
+ 
     return errorToken(scanner, "Unexpected character.");
 
-#undef _makeToken
 #undef makeToken
 }
