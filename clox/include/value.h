@@ -23,11 +23,11 @@ typedef struct {
 #define IS_NUMBER(value)  ((value).type == VAL_NUMBER)
 
 #define AS_BOOL(value)    ((value).as.boolean)
-#define AS_number(value)  ((value).as.number)
+#define AS_NUMBER(value)  ((value).as.number)
 
 #define BOOL_VAL(value)   ((Value){VAL_BOOL, {.boolean = value}})
 #define NIL_VAL(value)    ((Value){VAL_NIL, {.number = 0}})
-#define NUMBER_VAL(value) ((Value){VAL_NUMBER, {.boolean = value}})
+#define NUMBER_VAL(value) ((Value){VAL_NUMBER, {.number = value}})
 
 typedef struct {
     int count;

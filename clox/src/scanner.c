@@ -188,6 +188,7 @@ Token scanToken(Scanner *scanner) {
     case ')': return makeToken(TOKEN_RIGHT_PAREN);
     case '{': return makeToken(TOKEN_LEFT_BRACE);
     case '}': return makeToken(TOKEN_RIGHT_BRACE);
+    case ':': return makeToken(TOKEN_COLON);
     case ';': return makeToken(TOKEN_SEMICOLON);
     case ',': return makeToken(TOKEN_COMMA);
     case '.': return makeToken(TOKEN_DOT);
@@ -195,6 +196,8 @@ Token scanToken(Scanner *scanner) {
     case '+': return makeToken(TOKEN_PLUS);
     case '/': return makeToken(TOKEN_SLASH);
     case '*': return makeToken(TOKEN_STAR);
+    case '?': return makeToken(TOKEN_EROTEME);
+    case '^': return makeToken(TOKEN_CARET);
     case '!':
         return makeToken(
                 match(scanner, '=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);

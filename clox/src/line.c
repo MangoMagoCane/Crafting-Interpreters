@@ -41,8 +41,8 @@ void printLineArray(LineArray *array) {
 
 int getLine(LineArray *array, int index) {
     int i = 0;
-    index++;
 
+    index++;
     do {
         if (i >= array->count) {
             return -1;

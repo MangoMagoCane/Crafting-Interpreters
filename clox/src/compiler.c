@@ -20,15 +20,18 @@ typedef struct {
 
 typedef enum {
     PREC_NONE,
-    PREC_ASSIGNMENT, // =
-    PREC_OR,         // or
-    PREC_AND,        // and
-    PREC_EQUALITY,   // == !=
-    PREC_COMPARISON, // < > <= >=
-    PREC_TERM,       // + -
-    PREC_FACTOR,     // * /
-    PREC_UNARY,      // ! -
-    PREC_CALL,       // . ()
+    PREC_ASSIGNMENT,  // =
+    PREC_OR,          // or
+    PREC_AND,         // and
+    PREC_CONDITIONAL, // ?
+    PREC_EQUALITY,    // == !=
+    PREC_COMPARISON,  // < > <= >=
+    PREC_TERM,        // + -
+    PREC_POWER,       // ^
+    PREC_FACTOR,      // * /
+    PREC_UNARY,       // ! -
+    PREC_POST,        // !
+    PREC_CALL,        // . ()
     PREC_PRIMARY
 } Precedence;
 
@@ -164,7 +167,6 @@ static void expression(Parser *parser) {
 }
 
 static void number(Parser *parser) {
-
     double value = strtod(parser->previous.start, NULL);
     emitConstant(parser, NUMBER_VAL(value));
 }
@@ -179,6 +181,33 @@ static void unary(Parser *parser) {
     }
 }
 
+static void post(Parser *parser) {
+    TokenType operatorType = parser->previous.type;
+
+    switch (operatorType) {
+    case TOKEN_BANG: emitByte(parser, OP_FACTORIAL); break;
+    default: return; // Unreachable.
+    }
+}
+
+static void mix(Parser *parser) {
+    // TokenType operatorType = parser->previous.type;
+    parsePrecedence(parser, PREC_CONDITIONAL);
+    consume(parser, TOKEN_COLON, "Expect ':' in expression.");
+    parsePrecedence(parser, PREC_CONDITIONAL);
+
+}
+static void binrl(Parser *parser) {
+    TokenType operatorType = parser->previous.type;
+    ParseRule *rule = getRule(operatorType);
+    parsePrecedence(parser, rule->precedence + 1);
+
+    switch (operatorType) {
+    case TOKEN_CARET: emitByte(parser, OP_EXPONENTIATE); break;
+    default: return; // Unreachable.
+    }
+}
+
 ParseRule rules[] = {
     [TOKEN_LEFT_PAREN]    = {grouping, NULL,   PREC_NONE},
     [TOKEN_RIGHT_PAREN]   = {NULL,     NULL,   PREC_NONE},
@@ -188,10 +217,13 @@ ParseRule rules[] = {
     [TOKEN_DOT]           = {NULL,     NULL,   PREC_NONE},
     [TOKEN_MINUS]         = {unary,    binary, PREC_TERM},
     [TOKEN_PLUS]          = {NULL,     binary, PREC_TERM},
+    [TOKEN_COLON]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
     [TOKEN_SLASH]         = {NULL,     binary, PREC_FACTOR},
     [TOKEN_STAR]          = {NULL,     binary, PREC_FACTOR},
-    [TOKEN_BANG]          = {NULL,     NULL,   PREC_NONE},
+    [TOKEN_EROTEME]       = {NULL,     mix,    PREC_CONDITIONAL},
+    [TOKEN_CARET]         = {NULL,     binrl,  PREC_POWER},
+    [TOKEN_BANG]          = {NULL,     post,   PREC_POST},
     [TOKEN_BANG_EQUAL]    = {NULL,     NULL,   PREC_NONE},
     [TOKEN_EQUAL]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_EQUAL_EQUAL]   = {NULL,     NULL,   PREC_NONE},
@@ -243,6 +275,50 @@ static ParseRule *getRule(TokenType type) {
     return &rules[type];
 }
 
+static int prec(char c) {
+    switch (c) {
+    case '+': return 1;
+    case '-': return 1;
+    case '*': return 2;
+    case '/': return 2;
+    default: return 0;
+    }
+}
+
+static void expr(Parser *parser) {
+    char stack[100];
+    int i = 0;
+    bool push_to_stack;
+
+    for (; parser->previous.type != TOKEN_EOF; advance(parser)) {
+        bool push_to_stack = true;
+        if (parser->previous.type == TOKEN_NUMBER) {
+            printf("%.*s ", parser->previous.length, parser->previous.start);
+            continue;
+        }
+
+        char c = *parser->previous.start;
+
+        if (i <= 0) {
+            stack[i++] = c;
+            continue;
+        }
+
+        while (i > 0 && prec(stack[i-1]) >= prec(c)) {
+            printf("%c ", stack[--i]);
+            push_to_stack = false;
+        }
+
+        stack[i++] = c;
+    }
+
+    for (int j = i-1; j >= 0; j--) {
+        printf("%c ", stack[j]);
+    }
+
+    printf("\n");
+}
+
 bool compile(const char *source, Chunk *chunk) {
     Parser parser;
     Scanner scanner;
@@ -251,8 +327,10 @@ bool compile(const char *source, Chunk *chunk) {
     initParser(&parser, &scanner, chunk);
 
     advance(&parser);
-    expression(&parser);
+    expr(&parser);
+    // expression(&parser);
     consume(&parser, TOKEN_EOF, "Expect end of expression.");
     endCompiler(&parser);
-    return !parser.hadError;
+    // return !parser.hadError;
+    return parser.hadError;
 }
