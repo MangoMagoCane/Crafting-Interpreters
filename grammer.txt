@@ -2,10 +2,10 @@
 
 expression      → comma ;
 nonCommaExpr    → lambdaNonComma ;
-lambda          → ( parameters | "(" parameters? ")" ) "=>" ( expression | block )
-                | comma ;
 lambdaNonComma  → ( parameters | "(" parameters? ")" ) "=>" ( expression | block )
                 | assignment ;
+lambda          → ( parameters | "(" parameters? ")" ) "=>" ( expression | block )
+                | comma ;
 comma           → assignment ( "," assignment )* ;
 assignment      → IDENTIFIER "=" assignment
                 | logical_or ;
@@ -48,7 +48,8 @@ exprStmt        → expression ";" ;
 block           → "{" declaration* "}" ;
 ifStmt          → "if" "(" expression ")" statement
                 ( "else" statement )? ;
-forStmt         → "for" "(" ( varDecl | exprStmt | ";" ")
+forStmt         → "for" "("
+                  ( varDecl | exprStmt | ";" )
                   expression? ";"
                   expression? ")" statement ;
 whileStmt       → "while" "(" expression ")" statement ;

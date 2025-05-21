@@ -240,7 +240,11 @@ class Parser {
         }
 
         if (delimeter == RIGHT_PAREN) {
-            consume(RIGHT_PAREN, "EXPECT ')' after lambda parameters.");
+            // consume(RIGHT_PAREN, "EXPECT ')' after lambda parameters.");
+            if (!match(RIGHT_PAREN)) {
+                rewind(tokenIndex);
+                return primary();
+            }
         } else if (parameters.size() == 0) {
             error(peek(), "EXPECT '()' or parameters.");
         }

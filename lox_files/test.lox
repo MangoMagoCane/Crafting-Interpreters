@@ -31,10 +31,10 @@ var a = 1;
     print(a);
 }
 
-// (((true ?. 1 : false) ?. 2 : 3) ? 4 : 5);
-// ((true ?. 1 : false) ? 2 : (3 ? 4 : 5));
-// (true ? 1 : ((false ?. 2 : 3) ? 4 : 5));
-// (true ? 1 : (false ? 2 : (3 ? 4 : 5)));
+(((true ?. 1 : false) ?. 2 : 3) ? 4 : 5);
+((true ?. 1 : false) ? 2 : (3 ? 4 : 5));
+(true ? 1 : ((false ?. 2 : 3) ? 4 : 5));
+(true ? 1 : (false ? 2 : (3 ? 4 : 5)));
 
 //comment
 
