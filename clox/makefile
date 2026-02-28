@@ -1,6 +1,6 @@
 IDIR=include
 CC=gcc
-CFLAGS=-I$(IDIR)
+# CFLAGS=-I$(IDIR)
 CFLAGS=-I$(IDIR) -lm -Wall -Wextra -g3 -O0
 
 SDIR=src

@@ -28,18 +28,17 @@ typedef struct {
     Expr *right;
 } ExprBinary;
 
-typedef struct _Visitor {
-    void *(*visitLiteral)(ExprLiteral *literal);
-    void *(*visitUnary)(ExprUnary *unary);
-    void *(*visitBinary)(ExprBinary *binary);
+typedef struct {
+    void *(*visitLiteral)(ExprLiteral *expr);
+    void *(*visitUnary)(ExprUnary *expr);
+    void *(*visitBinary)(ExprBinary *expr);
 } Visitor;
 
 static inline void accept(Expr *expr, Visitor *visitor) {
-    // printf("(:%d)\n", expr->type);
     switch (expr->type) {
-    case EXPR_LITERAL: (*visitor->visitLiteral)((ExprLiteral *)expr); break;
-    case EXPR_UNARY: (*visitor->visitUnary)((ExprUnary *)expr); break;
-    case EXPR_BINARY: (*visitor->visitBinary)((ExprBinary *)expr); break;
+    case EXPR_LITERAL: visitor->visitLiteral((ExprLiteral *)expr); break;
+    case EXPR_UNARY: visitor->visitUnary((ExprUnary *)expr); break;
+    case EXPR_BINARY: visitor->visitBinary((ExprBinary *)expr); break;
     }
 }
 

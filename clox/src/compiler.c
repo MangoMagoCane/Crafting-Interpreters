@@ -275,49 +275,49 @@ static ParseRule *getRule(TokenType type) {
     return &rules[type];
 }
 
-static int prec(char c) {
-    switch (c) {
-    case '+': return 1;
-    case '-': return 1;
-    case '*': return 2;
-    case '/': return 2;
-    default: return 0;
-    }
-}
-
-static void expr(Parser *parser) {
-    char stack[100];
-    int i = 0;
-    bool push_to_stack;
-
-    for (; parser->previous.type != TOKEN_EOF; advance(parser)) {
-        bool push_to_stack = true;
-        if (parser->previous.type == TOKEN_NUMBER) {
-            printf("%.*s ", parser->previous.length, parser->previous.start);
-            continue;
-        }
-
-        char c = *parser->previous.start;
-
-        if (i <= 0) {
-            stack[i++] = c;
-            continue;
-        }
-
-        while (i > 0 && prec(stack[i-1]) >= prec(c)) {
-            printf("%c ", stack[--i]);
-            push_to_stack = false;
-        }
-
-        stack[i++] = c;
-    }
-
-    for (int j = i-1; j >= 0; j--) {
-        printf("%c ", stack[j]);
-    }
-
-    printf("\n");
-}
+// static int prec(char c) {
+//     switch (c) {
+//     case '+': return 1;
+//     case '-': return 1;
+//     case '*': return 2;
+//     case '/': return 2;
+//     default: return 0;
+//     }
+// }
+//
+// static void expr(Parser *parser) {
+//     char stack[100];
+//     int i = 0;
+//     bool push_to_stack;
+//
+//     for (; parser->previous.type != TOKEN_EOF; advance(parser)) {
+//         bool push_to_stack = true;
+//         if (parser->previous.type == TOKEN_NUMBER) {
+//             printf("%.*s ", parser->previous.length, parser->previous.start);
+//             continue;
+//         }
+//
+//         char c = *parser->previous.start;
+//
+//         if (i <= 0) {
+//             stack[i++] = c;
+//             continue;
+//         }
+//
+//         while (i > 0 && prec(stack[i-1]) >= prec(c)) {
+//             printf("%c ", stack[--i]);
+//             push_to_stack = false;
+//         }
+//
+//         stack[i++] = c;
+//     }
+//
+//     for (int j = i-1; j >= 0; j--) {
+//         printf("%c ", stack[j]);
+//     }
+//
+//     printf("\n");
+// }
 
 bool compile(const char *source, Chunk *chunk) {
     Parser parser;
@@ -327,8 +327,8 @@ bool compile(const char *source, Chunk *chunk) {
     initParser(&parser, &scanner, chunk);
 
     advance(&parser);
-    expr(&parser);
-    // expression(&parser);
+    // expr(&parser);
+    expression(&parser);
     consume(&parser, TOKEN_EOF, "Expect end of expression.");
     endCompiler(&parser);
     // return !parser.hadError;

@@ -60,7 +60,7 @@ static void runFile(VM *vm, const char *path) {
 }
 
 int main(int argc, const char *argv[]) {
-    VM vm;
+    VM vm = {};
     initVM(&vm);
 
     if (argc == 1) {

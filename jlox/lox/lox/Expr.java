@@ -34,7 +34,7 @@ abstract class Expr {
     }
 
     static class Binary extends Expr {
-        final Expr left;
+        inal Expr left;
         final Token operator;
         final Expr right;
 
